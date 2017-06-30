@@ -2,6 +2,57 @@
 Self-Driving Car Engineer Nanodegree Program
 
 ---
+## Implementation
+
+### The Model
+
+#### State
+
+In this project, I used the Kinematic Model, so the state includes x, y, psi, v, cte, epsi. It is a simplification of dynamic model that ingnores
+several forces like, tire force, gravity and mass.
+
+#### Actuators
+
+It is assumed to have two actuators for the car, the streeing angle and the acceleration which is controlled with throttle and breaks.
+
+#### equation
+
+```
+next_x = last_x + last_v * cos(last_psi) * dt;
+next_y = last_x + last_v * sin(last_psi) * dt;
+next_psi = last_psi + last_v / Lf * a * dt;
+next_v = last_v + a * dt;
+next_cte = poly(last_x) - last_y + last_v * sin(last_epsi) * dt;
+next_epsi = last_psi - last_des_psi + last_v / Lf * a * dt;
+
+```
+
+
+### Timestep Length and Elapsed Duration (N & dt)
+
+N is the number of timesteps in the horizon. dt is how much time elapses between actuations.
+We can limit the prediction horizon to be about 10-12 meters for mataning speed around 60mph, which means our prediction horizon is around 0.5 seconds.
+Beyond that, the track can change enough that it won't make sense to predict any futher into the future. We start test our implementation with reference velocity from 20 miles per hour, and limit our searh of N from 10 - 16, dt from 0.025 - 0.075. We gradually increased reference velocity once we obtain a good result and adjust the values again for the testing velocity. Our final choices of N is 10, and dt is 0.5. These two values seem work well for reference velocity from 20 to 60 miles per hour. Athough this settings works when the car speed go to 80 miles per hour in simulator, it does show high swing on the second turn after the bridge. This show we need to use a small T and different N and dt for speed higher than 80 miles per hour.
+
+### Polynomial Fitting and MPC Preprocessing
+
+the waypoints are transformed from map system into vehicle system, before fitting.
+
+In this map, I use 3rd order polynomial to fit the route of car. It can fit waypoints well in this project.
+
+### Model Predictive Control with Latency
+
+There is always a delay from MPC computation to the executation of actuation command. For this project, we assumed the latency  to be 100 millisecond.
+ To handle the latency, we estimate the car's prospective state based on its current speed and heading direction.
+ The result is used as car's initial state for MPC trajectory computation.
+the code in main.ccp line 142-158 explains how the state is estimated.
+
+
+### future
+improving the streeing angle when car velocity increases more than 70mph.
+
+
+---
 
 ## Dependencies
 
